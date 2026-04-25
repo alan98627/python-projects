@@ -7,8 +7,12 @@ FILE_NAME = "tasks.json"
 def load_tasks():
     if not os.path.exists(FILE_NAME):
         return []
-    with open(FILE_NAME, "r") as file:
-        return json.load(file)
+
+    try:
+        with open(FILE_NAME, "r") as file:
+            return json.load(file)
+    except json.JSONDecodeError:
+        return []
 
 
 def save_tasks(tasks):
@@ -17,7 +21,11 @@ def save_tasks(tasks):
 
 
 def add_task(tasks):
-    task = input("Enter new task: ")
+    task = input("Enter new task: ").strip()
+    if task == "":
+        print("Task cannot be empty.")
+        return
+
     tasks.append({"task": task, "done": False})
     save_tasks(tasks)
     print("Task added.")
@@ -27,6 +35,7 @@ def view_tasks(tasks):
     if not tasks:
         print("No tasks found.")
         return
+
     for i, t in enumerate(tasks):
         status = "✔" if t["done"] else "✘"
         print(f"{i + 1}. {t['task']} [{status}]")
@@ -34,24 +43,38 @@ def view_tasks(tasks):
 
 def complete_task(tasks):
     view_tasks(tasks)
+
     try:
         index = int(input("Enter task number to mark complete: ")) - 1
+
+        if index < 0 or index >= len(tasks):
+            print("Invalid task number.")
+            return
+
         tasks[index]["done"] = True
         save_tasks(tasks)
         print("Task marked as complete.")
-    except:
-        print("Invalid input.")
+
+    except ValueError:
+        print("Please enter a valid number.")
 
 
 def delete_task(tasks):
     view_tasks(tasks)
+
     try:
         index = int(input("Enter task number to delete: ")) - 1
+
+        if index < 0 or index >= len(tasks):
+            print("Invalid task number.")
+            return
+
         tasks.pop(index)
         save_tasks(tasks)
         print("Task deleted.")
-    except:
-        print("Invalid input.")
+
+    except ValueError:
+        print("Please enter a valid number.")
 
 
 def main():
@@ -76,6 +99,7 @@ def main():
         elif choice == "4":
             delete_task(tasks)
         elif choice == "5":
+            print("Goodbye!")
             break
         else:
             print("Invalid choice.")
